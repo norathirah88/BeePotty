@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeePotty - Potty Training Made Easy for Malaysian Parents</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- html2pdf.js for Exporting PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bee: {
+                            yellow: '#FFD000',
+                            gold: '#FFB700',
+                            dark: '#18181B',
+                            light: '#FEFCE8',
+                            gray: '#27272A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-amber-50/30 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col md:flex-row font-sans transition-colors duration-200">
+
+    <!-- NAVIGATION SIDEBAR (Desktop) / TOPBAR (Mobile) -->
+    <aside class="w-full md:w-64 bg-bee-yellow dark:bg-zinc-800 text-zinc-900 dark:text-white p-4 md:min-h-screen flex flex-col justify-between shadow-md border-r border-amber-200 dark:border-zinc-700 z-20">
+        <div>
+            <!-- LOGO & BRAND -->
+            <div class="flex items-center justify-between md:justify-start gap-3 mb-6">
+                <div class="bg-zinc-900 dark:bg-bee-yellow text-bee-yellow dark:text-zinc-900 p-2.5 rounded-2xl text-2xl shadow-lg">
+                    🐝
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight">BeePotty</h1>
+                    <p class="text-xs font-semibold opacity-80" id="app-tagline">Potty Training Made Easy</p>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-2xl p-1 focus:outline-none">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- PROFILE SELECTOR -->
+            <div class="bg-white/80 dark:bg-zinc-700/80 backdrop-blur p-3 rounded-xl mb-4 flex items-center gap-3 border border-amber-200 dark:border-zinc-600 shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-amber-200 dark:bg-zinc-600 flex items-center justify-center text-xl font-bold border-2 border-zinc-900 dark:border-bee-yellow" id="current-child-avatar">
+                    👶
+                </div>
+                <div class="flex-1 min-w-0">
+                    <select id="child-select" onchange="changeChild(this.value)" class="bg-transparent font-bold text-sm w-full focus:outline-none text-zinc-800 dark:text-white cursor-pointer">
+                        <!-- Populated by JS -->
+                    </select>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-300" id="current-child-age">24 Bulan</p>
+                </div>
+            </div>
+
+            <!-- NAVIGATION LINKS -->
+            <nav id="nav-menu" class="hidden md:flex flex-col space-y-1.5 overflow-y-auto max-h-[calc(100vh-250px)] hide-scrollbar">
+                <!-- Dynamic Items Inserted via JS -->
+            </nav>
+        </div>
+
+        <!-- QUICK SETTINGS / LANGUAGE -->
+        <div class="hidden md:block pt-4 border-t border-amber-300 dark:border-zinc-700 space-y-2">
+            <div class="flex justify-between items-center text-xs font-bold">
+                <span id="lang-label">Bahasa:</span>
+                <div class="flex gap-1 bg-white dark:bg-zinc-700 p-1 rounded-lg border border-amber-200 dark:border-zinc-600">
+                    <button onclick="setLanguage('ms')" id="lang-ms" class="px-2 py-0.5 rounded text-xs font-extrabold transition-all">MS</button>
+                    <button onclick="setLanguage('en')" id="lang-en" class="px-2 py-0.5 rounded text-xs font-extrabold transition-all">EN</button>
+                </div>
+            </div>
+            <button onclick="toggleDarkMode()" class="w-full flex items-center justify-center gap-2 py-2 px-3 bg-zinc-900 dark:bg-zinc-700 text-white rounded-xl text-xs font-bold hover:bg-zinc-800 transition">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:inline text-bee-yellow"></i>
+                <span id="theme-btn-text">Tukar Tema</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full overflow-x-hidden">
+        
+        <!-- HEADER TOP BAR (Notifications & Quick Status) -->
+        <header class="flex justify-between items-center mb-6 bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-amber-100 dark:border-zinc-700">
+            <div>
+                <div class="text-xs font-bold text-amber-600 dark:text-bee-yellow uppercase tracking-wider" id="header-badge">BeePotty Malaysia</div>
+                <h2 class="text-xl md:text-2xl font-black text-zinc-800 dark:text-white" id="page-title">Dashboard</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openModal('notifications-modal')" class="relative p-2.5 bg-amber-100 dark:bg-zinc-700 text-zinc-800 dark:text-white rounded-xl hover:bg-amber-200 transition">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+                    <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                </button>
+                <div class="px-3 py-1.5 bg-amber-400 text-zinc-900 rounded-xl font-extrabold text-xs flex items-center gap-1.5 shadow-sm">
+                    <span id="child-badge-level">🐝 Little Bee</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECTIONS CONTAINER -->
+        <div id="content-container">
+
+            <!-- 1. DASHBOARD -->
+            <section id="sec-dashboard" class="space-y-6">
+                <!-- Hero Banner -->
+                <div class="bg-gradient-to-r from-bee-yellow via-amber-300 to-amber-400 dark:from-zinc-800 dark:to-zinc-700 p-6 rounded-3xl text-zinc-900 dark:text-white shadow-lg relative overflow-hidden border border-amber-300 dark:border-zinc-600">
+                    <div class="relative z-10 max-w-2xl">
+                        <span class="bg-zinc-900 text-bee-yellow px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Motivasi Harian 🐝</span>
+                        <blockquote class="text-lg md:text-xl font-bold mt-3 italic" id="daily-quote">
+                            "Konsisten adalah kunci kejayaan. Setiap kemalangan kecil ialah satu langkah pembelajaran!"
+                        </blockquote>
+                        <div class="mt-4 flex flex-wrap gap-4 text-xs font-bold">
+                            <span class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur px-3 py-1.5 rounded-xl border border-white/40"><i class="fa-solid fa-calendar-day mr-1"></i> <span id="dash-day-count">Hari ke-5</span> Training</span>
+                            <span class="bg-white/60 dark:bg-zinc-900/60 backdrop-blur px-3 py-1.5 rounded-xl border border-white/40"><i class="fa-solid fa-fire mr-1 text-orange-500"></i> Streak: <span id="dash-streak">3 Hari</span></span>
+                        </div>
+                    </div>
+                    <div class="absolute -right-6 -bottom-6 text-9xl opacity-20 pointer-events-none">🐝</div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 font-bold">Progress Keseluruhan</p>
+                        <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-amber-500" id="dash-progress-percent">65%</h3>
+                        <div class="w-full bg-amber-100 dark:bg-zinc-700 h-2.5 rounded-full mt-2 overflow-hidden">
+                            <div class="bg-bee-yellow h-2.5 rounded-full" id="dash-progress-bar" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 font-bold">Kencing (Hari ini)</p>
+                        <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-blue-500" id="dash-today-pee">4</h3>
+                        <p class="text-[10px] text-zinc-400 mt-1">Kejayaan di tandas</p>
+                    </div>
+                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 font-bold">Berak (Hari ini)</p>
+                        <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-amber-700" id="dash-today-poop">1</h3>
+                        <p class="text-[10px] text-zinc-400 mt-1">Kejayaan di tandas</p>
+                    </div>
+                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-2xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 font-bold">Kemalangan (Accident)</p>
+                        <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-red-500" id="dash-today-accidents">1</h3>
+                        <p class="text-[10px] text-zinc-400 mt-1">Jangan risau, teruskan!</p>
+                    </div>
+                </div>
+
+                <!-- AI Quick Insight -->
+                <div class="bg-amber-100/50 dark:bg-zinc-800 p-4 rounded-2xl border-l-4 border-bee-yellow flex items-start gap-3">
+                    <div class="text-2xl">💡</div>
+                    <div>
+                        <h4 class="font-bold text-sm text-zinc-900 dark:text-white">AI Parent Insight</h4>
+                        <p class="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5" id="dash-ai-insight">Anak anda mempunyai corak kencing paling kerap sekitar jam 9:30 pagi dan selepas mandi petang. Sediakan potty awal!</p>
+                    </div>
+                </div>
+
+                <!-- Quick Action Tracker Buttons -->
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span>⚡</span> Log Pantas Hari Ini
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <button onclick="quickLog('Pee')" class="p-4 bg-blue-50 dark:bg-zinc-700/50 hover:bg-blue-100 border border-blue-200 dark:border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                            <span class="text-3xl">🚽</span>
+                            <span class="font-bold text-sm text-blue-700 dark:text-blue-300">Pee (Kencing)</span>
+                        </button>
+                        <button onclick="quickLog('Poop')" class="p-4 bg-amber-50 dark:bg-zinc-700/50 hover:bg-amber-100 border border-amber-200 dark:border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                            <span class="text-3xl">💩</span>
+                            <span class="font-bold text-sm text-amber-800 dark:text-amber-300">Poop (Berak)</span>
+                        </button>
+                        <button onclick="quickLog('Accident')" class="p-4 bg-red-50 dark:bg-zinc-700/50 hover:bg-red-100 border border-red-200 dark:border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                            <span class="text-3xl">❌</span>
+                            <span class="font-bold text-sm text-red-700 dark:text-red-300">Accident</span>
+                        </button>
+                        <button onclick="quickLog('Asked Self')" class="p-4 bg-green-50 dark:bg-zinc-700/50 hover:bg-green-100 border border-green-200 dark:border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                            <span class="text-3xl">😊</span>
+                            <span class="font-bold text-sm text-green-700 dark:text-green-300">Minta Sendiri</span>
+                        </button>
+                        <button onclick="quickLog('Night Success')" class="p-4 bg-purple-50 dark:bg-zinc-700/50 hover:bg-purple-100 border border-purple-200 dark:border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                            <span class="text-3xl">🌙</span>
+                            <span class="font-bold text-sm text-purple-700 dark:text-purple-300">Night Success</span>
+                        </button>
+                        <button onclick="switchTab('sec-tracker')" class="p-4 bg-bee-yellow/30 dark:bg-zinc-700 hover:bg-bee-yellow/50 border border-amber-300 dark:border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-1 transition">
+                            <span class="text-3xl">📋</span>
+                            <span class="font-bold text-sm text-zinc-800 dark:text-white">Rekod Terperinci</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. CHILD PROFILE -->
+            <section id="sec-profile" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
+                        <span>👶 Profil Anak</span>
+                        <button onclick="openModal('add-child-modal')" class="text-xs bg-bee-yellow font-extrabold text-zinc-900 px-3 py-2 rounded-xl shadow hover:bg-amber-400 transition">+ Tambah Anak</button>
+                    </h3>
+                    <form id="child-profile-form" onsubmit="saveChildProfile(event)" class="space-y-4 max-w-lg">
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Nama Anak</label>
+                            <input type="text" id="prof-name" required class="w-full p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm focus:outline-none focus:border-bee-yellow">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Tarikh Lahir</label>
+                                <input type="date" id="prof-dob" required class="w-full p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm focus:outline-none focus:border-bee-yellow">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Jantina</label>
+                                <select id="prof-gender" class="w-full p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm focus:outline-none focus:border-bee-yellow">
+                                    <option value="Lelaki">Lelaki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Jenis Latihan</label>
+                            <select id="prof-type" class="w-full p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm focus:outline-none focus:border-bee-yellow">
+                                <option value="Day Training">Day Training (Siang)</option>
+                                <option value="Night Training">Night Training (Malam)</option>
+                                <option value="Both">Both (Siang & Malam)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-zinc-900 text-bee-yellow font-bold py-3 rounded-xl shadow-lg hover:bg-zinc-800 transition">Simpan Kemaskini</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 3. READINESS ASSESSMENT -->
+            <section id="sec-readiness" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-extrabold">📊 Ujian Kesediaan Potty Training</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Jawab soalan di bawah untuk mengetahui sama ada anak anda sedia secara fizikal dan emosi.</p>
+                    </div>
+
+                    <div class="space-y-3" id="readiness-questions">
+                        <!-- Questions JS Generated -->
+                    </div>
+
+                    <button onclick="calculateReadiness()" class="w-full mt-6 bg-bee-yellow text-zinc-900 font-extrabold py-3.5 rounded-xl shadow hover:bg-amber-400 transition">Nilaikan Kesediaan</button>
+
+                    <!-- Result Box -->
+                    <div id="readiness-result" class="hidden mt-6 p-6 rounded-2xl border text-center space-y-2">
+                        <span class="text-4xl" id="readiness-icon">🎉</span>
+                        <h4 class="text-xl font-extrabold" id="readiness-status">Ready to Start!</h4>
+                        <p class="text-xs leading-relaxed text-zinc-600 dark:text-zinc-300" id="readiness-desc">Anak anda menunjukkan tanda kesediaan yang sangat baik. Anda boleh memulakan Potty Training Plan 7 atau 14 hari!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. DAILY POTTY TRACKER -->
+            <section id="sec-tracker" class="space-y-6 hidden">
+                <!-- Log Entry Form -->
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700 space-y-4">
+                    <h3 class="text-lg font-bold">📝 Tambah Rekod Baru</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="log-type-selector">
+                        <button type="button" onclick="selectLogType('Pee')" class="log-type-btn border p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs hover:border-bee-yellow border-amber-300">🚽 Pee</button>
+                        <button type="button" onclick="selectLogType('Poop')" class="log-type-btn border p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs hover:border-bee-yellow border-zinc-200">💩 Poop</button>
+                        <button type="button" onclick="selectLogType('Accident')" class="log-type-btn border p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs hover:border-bee-yellow border-zinc-200">❌ Accident</button>
+                        <button type="button" onclick="selectLogType('Asked Self')" class="log-type-btn border p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs hover:border-bee-yellow border-zinc-200">😊 Minta</button>
+                        <button type="button" onclick="selectLogType('Night Success')" class="log-type-btn border p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs hover:border-bee-yellow border-zinc-200">🌙 Night</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Masa</label>
+                            <input type="time" id="log-time" class="w-full p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Lokasi</label>
+                            <select id="log-location" class="w-full p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm">
+                                <option value="Rumah">Rumah</option>
+                                <option value="Taska/Tadika">Taska / Tadika</option>
+                                <option value="Luar / Travel">Luar / Travel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">Nota</label>
+                        <input type="text" id="log-notes" placeholder="Contoh: Boleh duduk sendiri tanpa paksaan" class="w-full p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm">
+                    </div>
+                    <button onclick="savePottyLog()" class="w-full bg-bee-yellow text-zinc-900 font-extrabold py-3 rounded-xl hover:bg-amber-400 transition">+ Simpan Rekod</button>
+                </div>
+
+                <!-- History List -->
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">📜 Sejarah Rekod Hari Ini</h3>
+                    <div id="tracker-history-list" class="space-y-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. SMART REMINDER -->
+            <section id="sec-reminders" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">⏰ Smart Potty Reminder</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-2">Peringatan Berkala</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <button onclick="setReminderInterval(20)" class="p-3 border rounded-xl font-bold text-xs hover:border-bee-yellow focus:bg-bee-yellow/20">Setiap 20 Minit</button>
+                                <button onclick="setReminderInterval(30)" class="p-3 border rounded-xl font-bold text-xs hover:border-bee-yellow focus:bg-bee-yellow/20">Setiap 30 Minit</button>
+                                <button onclick="setReminderInterval(45)" class="p-3 border rounded-xl font-bold text-xs hover:border-bee-yellow focus:bg-bee-yellow/20">Setiap 45 Minit</button>
+                                <button onclick="setReminderInterval(60)" class="p-3 border rounded-xl font-bold text-xs hover:border-bee-yellow focus:bg-bee-yellow/20">Setiap 1 Jam</button>
+                            </div>
+                        </div>
+
+                        <hr class="border-zinc-200 dark:border-zinc-700">
+
+                        <div>
+                            <label class="block text-xs font-bold mb-2">Peringatan Khas Rutin</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center justify-between p-3 border dark:border-zinc-700 rounded-xl">
+                                    <span class="text-xs font-bold">🌅 Selepas Bangun Tidur</span>
+                                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400">
+                                </label>
+                                <label class="flex items-center justify-between p-3 border dark:border-zinc-700 rounded-xl">
+                                    <span class="text-xs font-bold">🍽️ Selepas Makan</span>
+                                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400">
+                                </label>
+                                <label class="flex items-center justify-between p-3 border dark:border-zinc-700 rounded-xl">
+                                    <span class="text-xs font-bold">🌙 Sebelum Tidur Malam</span>
+                                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400">
+                                </label>
+                                <label class="flex items-center justify-between p-3 border dark:border-zinc-700 rounded-xl">
+                                    <span class="text-xs font-bold">🚗 Sebelum Keluar Rumah</span>
+                                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400">
+                                </label>
+                            </div>
+                        </div>
+
+                        <button onclick="triggerNotificationSim()" class="w-full bg-zinc-900 dark:bg-zinc-700 text-bee-yellow py-3 rounded-xl font-bold text-xs">🔔 Uji Notifikasi Now ("Jom cuba duduk atas potty!")</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. REWARD SYSTEM & GAMIFICATION -->
+            <section id="sec-rewards" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700 text-center">
+                    <h3 class="text-xl font-extrabold mb-1">🐝 Papan Ganjaran Lebah</h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Kumpul pelekat lebah dan buka badge kejayaan!</p>
+                    
+                    <div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4" id="badges-grid">
+                        <!-- JS Insert Badges -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. PROGRESS ANALYTICS -->
+            <section id="sec-analytics" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">📈 Analitik & Progress Kencing/Berak</h3>
+                    <div class="h-64">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. AI POTTY COACH -->
+            <section id="sec-aicoach" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700 flex flex-col h-[500px]">
+                    <div class="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-700 pb-3 mb-3">
+                        <div class="p-2 bg-bee-yellow text-zinc-900 rounded-xl font-bold text-xl">🤖</div>
+                        <div>
+                            <h3 class="font-extrabold text-sm">AI Potty Coach (Positive Parenting)</h3>
+                            <p class="text-[10px] text-zinc-500">Montessori & Evidence-based Guidance</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Container -->
+                    <div id="ai-chat-box" class="flex-1 overflow-y-auto space-y-3 pr-2 text-xs">
+                        <div class="bg-amber-50 dark:bg-zinc-700 p-3 rounded-2xl max-w-[80%] border border-amber-200 dark:border-zinc-600">
+                            Hello! Saya AI Potty Coach anda 🐝. Ada sebarang cabaran seperti anak takut tandas atau masih mahu pakai lampin? Tanya saya!
+                        </div>
+                    </div>
+
+                    <!-- Suggested Prompts -->
+                    <div class="py-2 flex gap-2 overflow-x-auto hide-scrollbar text-[10px]">
+                        <button onclick="askAICoach('Anak saya takut tandas, apa perlu saya buat?')" class="bg-amber-100 dark:bg-zinc-700 whitespace-nowrap px-3 py-1.5 rounded-full font-bold">"Anak takut tandas"</button>
+                        <button onclick="askAICoach('Bagaimana nak mula potty training waktu malam?')" class="bg-amber-100 dark:bg-zinc-700 whitespace-nowrap px-3 py-1.5 rounded-full font-bold">"Night training"</button>
+                        <button onclick="askAICoach('Normal ke umur 4 tahun masih pakai lampin?')" class="bg-amber-100 dark:bg-zinc-700 whitespace-nowrap px-3 py-1.5 rounded-full font-bold">"Umur 4 tahun lampin"</button>
+                    </div>
+
+                    <!-- Input Chat -->
+                    <div class="flex gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
+                        <input type="text" id="ai-input" placeholder="Tanya soalan..." class="flex-1 p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-xs focus:outline-none">
+                        <button onclick="sendAICoachMessage()" class="bg-bee-yellow text-zinc-900 font-extrabold px-4 rounded-xl text-xs hover:bg-amber-400">Hantar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 9. LEARNING CENTRE -->
+            <section id="sec-learning" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">📚 Pusat Pembelajaran & Artikel</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="articles-grid">
+                        <!-- JS Dynamic Articles -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 10. VIDEO TUTORIALS -->
+            <section id="sec-videos" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">🎥 Video Panduan & Rutin</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="videos-grid">
+                        <!-- JS Dynamic Videos -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 11. EMERGENCY HELP -->
+            <section id="sec-emergency" class="space-y-6 hidden">
+                <div class="bg-red-50 dark:bg-zinc-800 border border-red-200 dark:border-red-900 p-6 rounded-3xl">
+                    <h3 class="text-lg font-extrabold text-red-600 dark:text-red-400 mb-2">🆘 Bantuan Kecemasan & Kesihatan</h3>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-4">Panduan untuk situasi perubatan atau halangan fizikal semasa potty training.</p>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-white dark:bg-zinc-700 p-4 rounded-2xl shadow-sm">
+                            <h4 class="font-bold text-sm text-red-500">💩 Anak Sembelit (Constipation)</h4>
+                            <p class="text-xs mt-1 text-zinc-600 dark:text-zinc-300">Berikan minuman air secukupnya, tingkatkan serat (buah/sayur). Jika najis keras & anak menangis, rujuk doktor kanak-kanak.</p>
+                        </div>
+                        <div class="bg-white dark:bg-zinc-700 p-4 rounded-2xl shadow-sm">
+                            <h4 class="font-bold text-sm text-red-500">⚠️ Kencing Sakit / Kencing Berdarah (UTI)</h4>
+                            <p class="text-xs mt-1 text-zinc-600 dark:text-zinc-300">Tanda jangkitan saluran kencing. **Sila dapatkan pemeriksaan doktor dengan SEGERA**.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 12. PARENT COMMUNITY -->
+            <section id="sec-community" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">💬 Komuniti Ibu Bapa Malaysia</h3>
+                    <div class="space-y-4" id="forum-posts">
+                        <!-- JS Insert Posts -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 13. POTTY TRAINING PLAN -->
+            <section id="sec-plans" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">📅 Pelan Potty Training (7 / 14 / 30 Hari)</h3>
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="loadPlan(7)" class="px-4 py-2 bg-bee-yellow font-bold text-xs rounded-xl">Pelan 7 Hari</button>
+                        <button onclick="loadPlan(14)" class="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 font-bold text-xs rounded-xl">Pelan 14 Hari</button>
+                    </div>
+                    <div class="space-y-2" id="plan-checklist">
+                        <!-- JS Checklists -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 14. PARENT NOTES -->
+            <section id="sec-notes" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">📝 Catatan Harian Ibu Bapa</h3>
+                    <textarea id="daily-note-text" rows="4" placeholder="Tulis catatan atau pemerhatian hari ini..." class="w-full p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-transparent text-sm focus:outline-none mb-3"></textarea>
+                    <button onclick="saveParentNote()" class="bg-bee-yellow text-zinc-900 font-extrabold px-6 py-2.5 rounded-xl text-xs hover:bg-amber-400">Simpan Nota</button>
+                </div>
+            </section>
+
+            <!-- 15. EXPORT REPORT -->
+            <section id="sec-export" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700 text-center" id="pdf-export-area">
+                    <h3 class="text-xl font-extrabold mb-2">📄 Laporan Perkembangan Potty Training</h3>
+                    <p class="text-xs text-zinc-500 mb-6">Muat turun laporan untuk dikongsi dengan Guru Taska/Tadika atau Doktor Kanak-kanak.</p>
+                    
+                    <div class="flex justify-center gap-4">
+                        <button onclick="exportPDF()" class="bg-red-500 text-white font-bold px-6 py-3 rounded-xl text-xs hover:bg-red-600 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf"></i> Download PDF
+                        </button>
+                        <button onclick="exportCSV()" class="bg-green-600 text-white font-bold px-6 py-3 rounded-xl text-xs hover:bg-green-700 flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel (CSV)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 16. SETTINGS -->
+            <section id="sec-settings" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-zinc-700">
+                    <h3 class="text-lg font-bold mb-4">⚙️ Tetapan Aplikasi</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 border dark:border-zinc-700 rounded-2xl">
+                            <div>
+                                <h4 class="font-bold text-xs">Bahasa / Language</h4>
+                                <p class="text-[10px] text-zinc-500">Pilih bahasa pilihan aplikasi</p>
+                            </div>
+                            <select onchange="setLanguage(this.value)" class="p-2 border rounded-xl text-xs bg-transparent dark:text-white">
+                                <option value="ms">Bahasa Melayu</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between items-center p-3 border dark:border-zinc-700 rounded-2xl">
+                            <div>
+                                <h4 class="font-bold text-xs">Mode Gelap (Dark Mode)</h4>
+                                <p class="text-[10px] text-zinc-500">Tukar warna tema skrin</p>
+                            </div>
+                            <button onclick="toggleDarkMode()" class="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 rounded-xl font-bold text-xs">Tukar</button>
+                        </div>
+                        <div class="p-4 bg-amber-50 dark:bg-zinc-700/50 rounded-2xl border border-amber-200 dark:border-zinc-600">
+                            <h4 class="font-extrabold text-xs text-amber-800 dark:text-bee-yellow">👑 BeePotty Plus (Premium)</h4>
+                            <p class="text-[10px] text-zinc-600 dark:text-zinc-300 mt-1">Sokongan profil tanpa had, AI Coach pintar, Cloud Backup, & Video Tutorials.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- NOTIFICATION MODAL -->
+    <div id="notifications-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl border border-amber-200 dark:border-zinc-700">
+            <h3 class="font-extrabold text-lg flex items-center gap-2">🔔 Notifikasi Smart</h3>
+            <p class="text-xs text-zinc-600 dark:text-zinc-300 bg-amber-100 dark:bg-zinc-700 p-3 rounded-2xl border border-amber-200 dark:border-zinc-600">
+                "Jom cuba duduk atas potty sekarang! Mana tahu ada surprise lebah! 🐝"
+            </p>
+            <button onclick="closeModal('notifications-modal')" class="w-full bg-bee-yellow text-zinc-900 font-bold py-2.5 rounded-xl text-xs">Faham</button>
+        </div>
+    </div>
+
+    <!-- ADD CHILD MODAL -->
+    <div id="add-child-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-zinc-800 p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl border border-amber-200 dark:border-zinc-700">
+            <h3 class="font-extrabold text-lg">➕ Tambah Profil Anak</h3>
+            <input type="text" id="new-child-name" placeholder="Nama Anak" class="w-full p-2.5 border rounded-xl text-xs bg-transparent">
+            <input type="date" id="new-child-dob" class="w-full p-2.5 border rounded-xl text-xs bg-transparent">
+            <div class="flex gap-2">
+                <button onclick="closeModal('add-child-modal')" class="flex-1 py-2 border rounded-xl font-bold text-xs">Batal</button>
+                <button onclick="addNewChild()" class="flex-1 py-2 bg-bee-yellow text-zinc-900 rounded-xl font-bold text-xs">Tambah</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // STATE MANAGEMENT
+        let currentLanguage = 'ms';
+        let currentChildId = 0;
+        let selectedLogType = 'Pee';
+
+        let appData = {
+            children: [
+                { id: 0, name: "Ahmad", dob: "2024-02-10", gender: "Lelaki", type: "Both", dayCount: 5, streak: 3, progress: 65, level: "Little Bee" },
+                { id: 1, name: "Zara", dob: "2023-08-15", gender: "Perempuan", type: "Day Training", dayCount: 12, streak: 8, progress: 85, level: "Smart Bee" }
+            ],
+            logs: [
+                { childId: 0, type: "Pee", time: "08:30", location: "Rumah", notes: "Duduk sendiri" },
+                { childId: 0, type: "Poop", time: "09:15", location: "Rumah", notes: "Minta sebelum buang" }
+            ]
+        };
+
+        const navItems = [
+            { id: 'sec-dashboard', label: 'Dashboard', icon: 'fa-chart-pie' },
+            { id: 'sec-profile', label: 'Profil Anak', icon: 'fa-child' },
+            { id: 'sec-readiness', label: 'Ujian Kesediaan', icon: 'fa-clipboard-check' },
+            { id: 'sec-tracker', label: 'Potty Tracker', icon: 'fa-toilet' },
+            { id: 'sec-reminders', label: 'Smart Reminder', icon: 'fa-clock' },
+            { id: 'sec-rewards', label: 'Ganjaran Lebah', icon: 'fa-award' },
+            { id: 'sec-analytics', label: 'Analitik Progress', icon: 'fa-chart-line' },
+            { id: 'sec-aicoach', label: 'AI Potty Coach', icon: 'fa-robot' },
+            { id: 'sec-learning', label: 'Pusat Ilmu', icon: 'fa-book-open' },
+            { id: 'sec-videos', label: 'Video Panduan', icon: 'fa-video' },
+            { id: 'sec-emergency', label: 'Kecemasan', icon: 'fa-triangle-exclamation' },
+            { id: 'sec-community', label: 'Komuniti Ibu Bapa', icon: 'fa-users' },
+            { id: 'sec-plans', label: 'Pelan Training', icon: 'fa-calendar-check' },
+            { id: 'sec-notes', label: 'Catatan Harian', icon: 'fa-note-sticky' },
+            { id: 'sec-export', label: 'Muat Turun Laporan', icon: 'fa-file-export' },
+            { id: 'sec-settings', label: 'Tetapan', icon: 'fa-gear' },
+        ];
+
+        // INIT APP
+        window.onload = function() {
+            renderNavMenu();
+            populateChildSelect();
+            updateDashboard();
+            renderReadinessQuestions();
+            renderBadges();
+            renderArticles();
+            renderVideos();
+            renderCommunity();
+            loadPlan(7);
+            initChart();
+        };
+
+        // NAV MENU RENDERER
+        function renderNavMenu() {
+            const navContainer = document.getElementById('nav-menu');
+            navContainer.innerHTML = navItems.map(item => `
+                <button onclick="switchTab('${item.id}')" class="nav-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs text-left w-full transition hover:bg-amber-300 dark:hover:bg-zinc-700" data-target="${item.id}">
+                    <i class="fa-solid ${item.icon} w-5"></i>
+                    <span>${item.label}</span>
+                </button>
+            `).join('');
+            highlightActiveNav('sec-dashboard');
+        }
+
+        function switchTab(sectionId) {
+            document.querySelectorAll('#content-container > section').forEach(sec => sec.classList.add('hidden'));
+            const targetSec = document.getElementById(sectionId);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            highlightActiveNav(sectionId);
+
+            // Close mobile menu if open
+            const navMenu = document.getElementById('nav-menu');
+            if (window.innerWidth < 768) {
+                navMenu.classList.add('hidden');
+            }
+        }
+
+        function highlightActiveNav(sectionId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-target') === sectionId) {
+                    btn.classList.add('bg-zinc-900', 'text-bee-yellow', 'dark:bg-bee-yellow', 'dark:text-zinc-900');
+                } else {
+                    btn.classList.remove('bg-zinc-900', 'text-bee-yellow', 'dark:bg-bee-yellow', 'dark:text-zinc-900');
+                }
+            });
+        }
+
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('nav-menu');
+            navMenu.classList.toggle('hidden');
+        }
+
+        // CHILD SELECTION & MANAGEMENT
+        function populateChildSelect() {
+            const select = document.getElementById('child-select');
+            select.innerHTML = appData.children.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            select.value = currentChildId;
+        }
+
+        function changeChild(id) {
+            currentChildId = parseInt(id);
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (!child) return;
+
+            document.getElementById('current-child-age').innerText = `${child.dob} (${child.gender})`;
+            document.getElementById('child-badge-level').innerText = `🐝 ${child.level}`;
+            document.getElementById('dash-day-count').innerText = `Hari ke-${child.dayCount}`;
+            document.getElementById('dash-streak').innerText = `${child.streak} Hari`;
+            document.getElementById('dash-progress-percent').innerText = `${child.progress}%`;
+            document.getElementById('dash-progress-bar').style.width = `${child.progress}%`;
+
+            // Fill profile inputs
+            document.getElementById('prof-name').value = child.name;
+            document.getElementById('prof-dob').value = child.dob;
+            document.getElementById('prof-gender').value = child.gender;
+            document.getElementById('prof-type').value = child.type;
+
+            renderTrackerHistory();
+        }
+
+        function saveChildProfile(e) {
+            e.preventDefault();
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (child) {
+                child.name = document.getElementById('prof-name').value;
+                child.dob = document.getElementById('prof-dob').value;
+                child.gender = document.getElementById('prof-gender').value;
+                child.type = document.getElementById('prof-type').value;
+                populateChildSelect();
+                alert('Profil berjaya dikemaskini!');
+            }
+        }
+
+        function addNewChild() {
+            const name = document.getElementById('new-child-name').value;
+            const dob = document.getElementById('new-child-dob').value;
+            if (name) {
+                const newChild = {
+                    id: appData.children.length,
+                    name: name,
+                    dob: dob || '2024-01-01',
+                    gender: 'Lelaki',
+                    type: 'Both',
+                    dayCount: 1,
+                    streak: 0,
+                    progress: 10,
+                    level: 'Little Bee'
+                };
+                appData.children.push(newChild);
+                populateChildSelect();
+                changeChild(newChild.id);
+                closeModal('add-child-modal');
+            }
+        }
+
+        // QUICK LOG & TRACKER
+        function selectLogType(type) {
+            selectedLogType = type;
+            document.querySelectorAll('.log-type-btn').forEach(btn => {
+                btn.classList.remove('border-bee-yellow', 'bg-amber-100');
+            });
+        }
+
+        function quickLog(type) {
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            appData.logs.unshift({
+                childId: currentChildId,
+                type: type,
+                time: timeStr,
+                location: 'Rumah',
+                notes: 'Log pantas'
+            });
+            renderTrackerHistory();
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        }
+
+        function savePottyLog() {
+            const time = document.getElementById('log-time').value || '12:00';
+            const location = document.getElementById('log-location').value;
+            const notes = document.getElementById('log-notes').value;
+
+            appData.logs.unshift({
+                childId: currentChildId,
+                type: selectedLogType,
+                time: time,
+                location: location,
+                notes: notes
+            });
+
+            renderTrackerHistory();
+            alert('Rekod berjaya disimpan!');
+        }
+
+        function renderTrackerHistory() {
+            const historyList = document.getElementById('tracker-history-list');
+            const childLogs = appData.logs.filter(l => l.childId === currentChildId);
+
+            if (childLogs.length === 0) {
+                historyList.innerHTML = `<p class="text-xs text-zinc-400">Tiada rekod untuk hari ini.</p>`;
+                return;
+            }
+
+            historyList.innerHTML = childLogs.map(log => `
+                <div class="flex items-center justify-between p-3 bg-amber-50 dark:bg-zinc-700/50 rounded-2xl border border-amber-200 dark:border-zinc-600 text-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${getLogIcon(log.type)}</span>
+                        <div>
+                            <h4 class="font-extrabold text-zinc-800 dark:text-white">${log.type} (${log.location})</h4>
+                            <p class="text-[10px] text-zinc-500 dark:text-zinc-300">${log.notes || 'Tiada nota'}</p>
+                        </div>
+                    </div>
+                    <span class="font-bold text-zinc-500">${log.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function getLogIcon(type) {
+            switch(type) {
+                case 'Pee': return '🚽';
+                case 'Poop': return '💩';
+                case 'Accident': return '❌';
+                case 'Asked Self': return '😊';
+                case 'Night Success': return '🌙';
+                default: return '🐝';
+            }
+        }
+
+        // READINESS ASSESSMENT
+        const readinessQuestions = [
+            "Anak boleh berjalan dan berlari sendiri",
+            "Lampin kekal kering sekurang-kurangnya 2 jam",
+            "Boleh menarik seluar ke atas dan ke bawah",
+            "Faham arahan mudah (cth: 'Jom gi tandas')",
+            "Menunjukkan isyarat tahu bila nak buang air",
+            "Berminat melihat ibu bapa/ahli keluarga guna tandas",
+            "Tidak takut atau ragu-ragu terhadap mangkuk tandas"
+        ];
+
+        function renderReadinessQuestions() {
+            const container = document.getElementById('readiness-questions');
+            container.innerHTML = readinessQuestions.map((q, idx) => `
+                <label class="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-700 rounded-2xl cursor-pointer hover:bg-amber-50/50">
+                    <span class="text-xs font-bold">${q}</span>
+                    <input type="checkbox" class="readiness-check w-4 h-4 accent-amber-400">
+                </label>
+            `).join('');
+        }
+
+        function calculateReadiness() {
+            const checks = document.querySelectorAll('.readiness-check:checked').length;
+            const resBox = document.getElementById('readiness-result');
+            const resIcon = document.getElementById('readiness-icon');
+            const resStatus = document.getElementById('readiness-status');
+            const resDesc = document.getElementById('readiness-desc');
+
+            resBox.classList.remove('hidden');
+
+            if (checks >= 5) {
+                resIcon.innerText = "🎉";
+                resStatus.innerText = "Ready to Start! (Sedia Memula)";
+                resDesc.innerText = "Anak anda telah memenuhi kebanyakan petanda fizikal & emosi. Bersedia untuk mula!";
+                resBox.className = "mt-6 p-6 rounded-2xl border text-center space-y-2 bg-green-50 border-green-200 text-green-900";
+            } else if (checks >= 3) {
+                resIcon.innerText = "⚡";
+                resStatus.innerText = "Almost Ready! (Hampir Sedia)";
+                resDesc.innerText = "Anak anda berada di fasa peralihan. Perkenalkan potty secara santai tanpa paksaan.";
+                resBox.className = "mt-6 p-6 rounded-2xl border text-center space-y-2 bg-amber-50 border-amber-200 text-amber-900";
+            } else {
+                resIcon.innerText = "⏳";
+                resStatus.innerText = "Not Ready Yet (Belum Sedia)";
+                resDesc.innerText = "Jangan terburu-buru. Cuba lagi beberapa minggu lagi demi perkembangan emosi anak.";
+                resBox.className = "mt-6 p-6 rounded-2xl border text-center space-y-2 bg-zinc-50 border-zinc-200 text-zinc-900";
+            }
+        }
+
+        // GAMIFICATION & BADGES
+        const badges = [
+            { icon: '🐝', title: 'First Success', desc: 'Kejayaan pertama di potty' },
+            { icon: '🚽', title: '3 Successful Pee', desc: '3x Kencing di tandas' },
+            { icon: '📅', title: '5 Dry Days', desc: '5 Hari tanpa lampin basah' },
+            { icon: '🌟', title: '10 Dry Days', desc: '10 Hari kecemerlangan' },
+            { icon: '🛡️', title: 'No Accident', desc: 'Seharian tanpa kemalangan' },
+            { icon: '👑', title: 'Potty Hero', desc: 'Bebas lampin sepenuhnya!' }
+        ];
+
+        function renderBadges() {
+            const grid = document.getElementById('badges-grid');
+            grid.innerHTML = badges.map(b => `
+                <div class="p-4 bg-amber-50 dark:bg-zinc-700 rounded-2xl border border-amber-200 dark:border-zinc-600 flex flex-col items-center">
+                    <span class="text-4xl mb-2">${b.icon}</span>
+                    <h4 class="font-bold text-xs">${b.title}</h4>
+                    <p class="text-[10px] text-zinc-500 dark:text-zinc-300 mt-0.5">${b.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        // AI COACH SIMULATION
+        function askAICoach(question) {
+            document.getElementById('ai-input').value = question;
+            sendAICoachMessage();
+        }
+
+        function sendAICoachMessage() {
+            const input = document.getElementById('ai-input');
+            const chatBox = document.getElementById('ai-chat-box');
+
+            if (!input.value.trim()) return;
+
+            const userText = input.value;
+            chatBox.innerHTML += `
+                <div class="bg-zinc-800 text-white p-3 rounded-2xl max-w-[80%] ml-auto text-xs">
+                    ${userText}
+                </div>
+            `;
+
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setTimeout(() => {
+                let aiReply = "Itu soalan yang hebat! Mengikut pendekatan Montessori & Positive Parenting, beri masa dan ruang kepada anak tanpa sebarang paksaan.";
+                if (userText.includes("takut")) {
+                    aiReply = "Anak takut tandas selalunya disebabkan bunyi flush yang kuat atau rasa seperti hendak jatuh. Cuba gunakan pot khas kecil di atas lantai terlebih dahulu!";
+                } else if (userText.includes("malam")) {
+                    aiReply = "Untuk Night Training, kurangkan pengambilan cecair 1 jam sebelum tidur dan pastikan anak membuang air tepat sebelum tidur.";
+                }
+
+                chatBox.innerHTML += `
+                    <div class="bg-amber-100 dark:bg-zinc-700 p-3 rounded-2xl max-w-[80%] border border-amber-200 dark:border-zinc-600 text-xs">
+                        🐝 <b>AI Potty Coach:</b> ${aiReply}
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 600);
+        }
+
+        // LEARNING & VIDEOS
+        function renderArticles() {
+            const grid = document.getElementById('articles-grid');
+            const articles = [
+                { title: 'Bila Masa Sesuai Potty Training?', tag: 'Asas' },
+                { title: 'Cara Potty Training 3 Hari', tag: 'Panduan' },
+                { title: 'Menangani Anak Sembelit', tag: 'Kesihatan' },
+                { title: 'Potty Training di Taska/Tadika', tag: 'Tips' }
+            ];
+            grid.innerHTML = articles.map(a => `
+                <div class="p-4 border dark:border-zinc-700 rounded-2xl hover:border-bee-yellow cursor-pointer">
+                    <span class="text-[10px] bg-bee-yellow text-zinc-900 font-bold px-2 py-0.5 rounded-full">${a.tag}</span>
+                    <h4 class="font-extrabold text-sm mt-2">${a.title}</h4>
+                    <p class="text-xs text-zinc-500 mt-1">Klik untuk membaca artikel penuh Montessori...</p>
+                </div>
+            `).join('');
+        }
+
+        function renderVideos() {
+            const grid = document.getElementById('videos-grid');
+            const videos = [
+                { title: 'Potty Setup Persekitaran Montessori' },
+                { title: 'Toilet Routine Bersama Anak' }
+            ];
+            grid.innerHTML = videos.map(v => `
+                <div class="p-4 border dark:border-zinc-700 rounded-2xl bg-zinc-900 text-white flex items-center gap-3">
+                    <div class="text-3xl text-bee-yellow"><i class="fa-solid fa-circle-play"></i></div>
+                    <div>
+                        <h4 class="font-bold text-xs">${v.title}</h4>
+                        <p class="text-[10px] text-zinc-400">Tutorial Video (2:30 min)</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // COMMUNITY
+        function renderCommunity() {
+            const container = document.getElementById('forum-posts');
+            container.innerHTML = `
+                <div class="p-4 border dark:border-zinc-700 rounded-2xl space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-xs">Puan Maria</span>
+                        <span class="text-[10px] text-zinc-400">• 2 jam lalu</span>
+                    </div>
+                    <p class="text-xs">Anak saya dah berjaya 3 hari tanpa kemalangan di Taska! Syukur sangat guna teknik lebah ini.</p>
+                    <div class="flex gap-4 text-xs font-bold text-amber-600 pt-2">
+                        <button><i class="fa-regular fa-thumbs-up"></i> Suka (12)</button>
+                        <button><i class="fa-regular fa-comment"></i> Komen (3)</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // PLAN CHECKLIST
+        function loadPlan(days) {
+            const container = document.getElementById('plan-checklist');
+            container.innerHTML = Array.from({length: days}, (_, i) => `
+                <label class="flex items-center justify-between p-3 border dark:border-zinc-700 rounded-xl text-xs">
+                    <span class="font-bold">Hari ${i+1}: Duduk potty secara berkala & puji anak</span>
+                    <input type="checkbox" class="accent-amber-400 w-4 h-4">
+                </label>
+            `).join('');
+        }
+
+        // CHART JS ANALYTICS
+        function initChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu', 'Ahad'],
+                    datasets: [
+                        { label: 'Pee (Berjaya)', data: [4, 5, 3, 6, 4, 5, 6], backgroundColor: '#FFD000' },
+                        { label: 'Accidents', data: [2, 1, 1, 0, 1, 0, 0], backgroundColor: '#EF4444' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { font: { size: 10 } } } }
+                }
+            });
+        }
+
+        // UTILS & EXPORTS
+        function setReminderInterval(mins) {
+            alert(`Smart Reminder di-set untuk setiap ${mins} minit!`);
+        }
+
+        function triggerNotificationSim() {
+            openModal('notifications-modal');
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('lang-ms').className = lang === 'ms' ? 'px-2 py-0.5 rounded text-xs font-extrabold bg-bee-yellow text-zinc-900' : 'px-2 py-0.5 rounded text-xs font-extrabold';
+            document.getElementById('lang-en').className = lang === 'en' ? 'px-2 py-0.5 rounded text-xs font-extrabold bg-bee-yellow text-zinc-900' : 'px-2 py-0.5 rounded text-xs font-extrabold';
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function exportPDF() {
+            const element = document.getElementById('pdf-export-area');
+            html2pdf().from(element).save('BeePotty_Report.pdf');
+        }
+
+        function exportCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,Masa,Jenis,Lokasi,Nota\n";
+            appData.logs.forEach(l => {
+                csvContent += `${l.time},${l.type},${l.location},${l.notes}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "BeePotty_Data.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function saveParentNote() {
+            alert('Nota harian berjaya disimpan!');
+        }
+    </script>
+</body>
+</html>
